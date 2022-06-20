@@ -59,6 +59,7 @@ void setup()
 void Halt()
 {
    Timer1.stop();
+   running = false;
    digitalWrite(CLOCK_PIN, LOW);
    clockDisplay->SetStatus(DiyClockDisplay::Status::Halt);
 }
@@ -67,13 +68,23 @@ void Run()
 {
    Timer1.pwm(CLOCK_PIN, 512, period);
    clockDisplay->SetStatus(DiyClockDisplay::Status::Run);
+   running = true;
 }
 
 void resetCallback(void *clientData)
 {
+   Halt();
    clockDisplay->SetStatus(DiyClockDisplay::Status::Reset);
    delay(500);
-   // TODO
+   // TODO - Set reset line high
+   digitalWrite(CLOCK_PIN, LOW);
+   delay(10);
+   digitalWrite(CLOCK_PIN, HIGH);
+   delay(100);
+   digitalWrite(CLOCK_PIN, LOW);
+   delay(100);
+   // TODO - Reset reset line
+   clockDisplay->SetStatus(DiyClockDisplay::Status::Halt);
 }
 
 void singleStepCallback(void *clientData)
@@ -97,9 +108,7 @@ void singleStepCallback(void *clientData)
 
 void runStopCallback(void *clientData)
 {
-   running = !running;
-
-   if (running)
+   if (!running)
    {
       Run();
    }
