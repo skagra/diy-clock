@@ -30,11 +30,15 @@ private:
     void DrawStatus(const char *statusString, bool inverse = false);
 
 public:
+    enum Status{Halt, Run, Reset, Step};
+
     DiyClockDisplay(int frequencyMax, Adafruit_SSD1306 *display);
 
     void SetFrequency(int frequency);
 
-    void SetStatus(const char *status, bool inverse = false);
+    void SetStatus(Status status);
+
+    void ShowError();
 };
 
 #endif

@@ -18,109 +18,135 @@ const int MARGIN = 4;
 #define STATUS_ERROR "ERR"
 #define STATUS_HALTED "HALT"
 
+#define ERROR_PERSISTENCE_MILLIS 300
+
 DiyClockDisplay::DiyClockDisplay(int frequencyMax, Adafruit_SSD1306 *display)
 {
-    _display = display;
-    _frequencyMax = frequencyMax;
+   _display = display;
+   _frequencyMax = frequencyMax;
 
-    _displayWidth = display->width();
-    _displayHeight = display->height();
+   _displayWidth = display->width();
+   _displayHeight = display->height();
 
-    Init();
+   Init();
 }
 
 void DiyClockDisplay::Init()
 {
-    int16_t x1, y1;
-    uint16_t w, h;
+   int16_t x1, y1;
+   uint16_t w, h;
 
-    _display->clearDisplay();
-    _display->setTextWrap(false);
+   _display->clearDisplay();
+   _display->setTextWrap(false);
 
-    _display->setTextColor(SSD1306_WHITE);
-    _display->setFont(&FreeSans9pt7b);
-    _fontHeight = FreeSans9pt7b.yAdvance;
+   _display->setTextColor(SSD1306_WHITE);
+   _display->setFont(&FreeSans9pt7b);
+   _fontHeight = FreeSans9pt7b.yAdvance;
 
-    // Draw the frequency label
-    _display->getTextBounds(FREQ_LABEL, 0, 0, &x1, &y1, &w, &h);
-    _fontBaseOffset = _fontHeight - h;
+   // Draw the frequency label
+   _display->getTextBounds(FREQ_LABEL, 0, 0, &x1, &y1, &w, &h);
+   _fontBaseOffset = _fontHeight - h;
 
-    _frequencyX = w;
-    _frequencyBottomY = _fontHeight;
+   _frequencyX = w;
+   _frequencyBottomY = _fontHeight;
 
-    _display->setCursor(0, _frequencyBottomY - _fontBaseOffset);
-    _display->print(FREQ_LABEL);
+   _display->setCursor(0, _frequencyBottomY - _fontBaseOffset);
+   _display->print(FREQ_LABEL);
 
-    // Draw the scale frame
-    _scaleFrameY = _frequencyBottomY + MARGIN;
-    _display->drawRect(0, _scaleFrameY, _displayWidth, SCALE_FRAME_HEIGHT, SSD1306_WHITE);
+   // Draw the scale frame
+   _scaleFrameY = _frequencyBottomY + MARGIN;
+   _display->drawRect(0, _scaleFrameY, _displayWidth, SCALE_FRAME_HEIGHT, SSD1306_WHITE);
 
-    // Draw the status label
-    _display->getTextBounds(STATUS_LABEL, 0, 0, &x1, &y1, &w, &h);
-    _statusX = w;
-    _statusBottomY = _scaleFrameY + SCALE_FRAME_HEIGHT + MARGIN + _fontHeight;
-    _display->setCursor(0, _statusBottomY - _fontBaseOffset);
-    _display->print(STATUS_LABEL);
+   // Draw the status label
+   _display->getTextBounds(STATUS_LABEL, 0, 0, &x1, &y1, &w, &h);
+   _statusX = w;
+   _statusBottomY = _scaleFrameY + SCALE_FRAME_HEIGHT + MARGIN + _fontHeight;
+   _display->setCursor(0, _statusBottomY - _fontBaseOffset);
+   _display->print(STATUS_LABEL);
 
-    _display->display();
+   _display->display();
+}
+
+void DiyClockDisplay::ShowError()
+{
+   _display->invertDisplay(true);
+   _display->display();
+   delay(ERROR_PERSISTENCE_MILLIS);
+   _display->invertDisplay(false);
+   _display->display();
 }
 
 void DiyClockDisplay::DrawScale(float fraction)
 {
-    int scaleWidth = _displayWidth - (2 * SCALE_INSET);
+   int scaleWidth = _displayWidth - (2 * SCALE_INSET);
 
-    // Blank out old scale display
-    _display->fillRect(SCALE_INSET, _scaleFrameY + SCALE_INSET,
-                       scaleWidth, SCALE_HEIGHT,
-                       SSD1306_BLACK);
+   // Blank out old scale display
+   _display->fillRect(SCALE_INSET, _scaleFrameY + SCALE_INSET,
+                      scaleWidth, SCALE_HEIGHT,
+                      SSD1306_BLACK);
 
-    _display->fillRect(SCALE_INSET, _scaleFrameY + SCALE_INSET,
-                       scaleWidth * fraction,
-                       SCALE_HEIGHT,
-                       SSD1306_WHITE);
+   _display->fillRect(SCALE_INSET, _scaleFrameY + SCALE_INSET,
+                      scaleWidth * fraction,
+                      SCALE_HEIGHT,
+                      SSD1306_WHITE);
 }
 
 void DiyClockDisplay::DrawFrequency(int frequency)
 {
-    _display->fillRect(_frequencyX, 0, _displayWidth, _fontHeight, SSD1306_BLACK);
+   _display->fillRect(_frequencyX, 0, _displayWidth, _fontHeight, SSD1306_BLACK);
 
-    _display->setCursor(_frequencyX, _frequencyBottomY - _fontBaseOffset);
-    _display->print(frequency);
-    _display->print(HZ_LABEL);
+   _display->setCursor(_frequencyX, _frequencyBottomY - _fontBaseOffset);
+   _display->print(frequency);
+   _display->print(HZ_LABEL);
 }
 
 void DiyClockDisplay::SetFrequency(int frequency)
 {
-    DrawFrequency(frequency);
-    DrawScale(frequency / (float)_frequencyMax);
-    _display->display();
+   DrawFrequency(frequency);
+   DrawScale(frequency / (float)_frequencyMax);
+   _display->display();
 }
 
 void DiyClockDisplay::DrawStatus(const char *statusString, bool inverse)
 {
-    int16_t x1, y1;
-    uint16_t w, h;
-    _display->getTextBounds(statusString, 0, 0, &x1, &y1, &w, &h);
+   int16_t x1, y1;
+   uint16_t w, h;
+   _display->getTextBounds(statusString, 0, 0, &x1, &y1, &w, &h);
 
-    _display->fillRect(_statusX, _statusBottomY - _fontHeight, _displayWidth, _fontHeight, SSD1306_BLACK);
-    _display->setCursor(_statusX, _statusBottomY - _fontBaseOffset);
+   _display->fillRect(_statusX, _statusBottomY - _fontHeight, _displayWidth, _fontHeight, SSD1306_BLACK);
+   _display->setCursor(_statusX, _statusBottomY - _fontBaseOffset);
 
-    if (inverse)
-    {
-        _display->fillRect(_statusX, _statusBottomY - _fontHeight, w, _fontHeight, SSD1306_WHITE);
-        _display->setTextColor(SSD1306_BLACK);
-    }
+   if (inverse)
+   {
+      _display->fillRect(_statusX, _statusBottomY - _fontHeight, w, _fontHeight, SSD1306_WHITE);
+      _display->setTextColor(SSD1306_BLACK);
+   }
 
-    _display->print(statusString);
+   _display->print(statusString);
 
-    if (inverse)
-    {
-        _display->setTextColor(SSD1306_WHITE);
-    }
+   if (inverse)
+   {
+      _display->setTextColor(SSD1306_WHITE);
+   }
+
+   _display->display();
 }
 
-void DiyClockDisplay::SetStatus(const char *status, bool inverse)
+void DiyClockDisplay::SetStatus(Status status)
 {
-    DrawStatus(status, inverse);
-    _display->display();
+   switch (status)
+   {
+   case Status::Run:
+      DrawStatus("RUN");
+      break;
+   case Status::Halt:
+      DrawStatus("HALT");
+      break;
+   case Status::Step:
+      DrawStatus("STEP");
+      break;
+   case Status::Reset:
+      DrawStatus("RESET", true);
+      break;
+   }
 }
