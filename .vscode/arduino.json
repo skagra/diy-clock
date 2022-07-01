@@ -2,6 +2,6 @@
     "sketch": "clock.ino",
     "output": "build",
     "board": "arduino:avr:nano",
-    "port": "COM6",
+    "port": "COM4",
     "configuration": "cpu=atmega328"
 }

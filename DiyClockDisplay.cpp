@@ -28,10 +28,10 @@ DiyClockDisplay::DiyClockDisplay(int frequencyMax, Adafruit_SSD1306 *display)
    _displayWidth = display->width();
    _displayHeight = display->height();
 
-   Init();
+   init();
 }
 
-void DiyClockDisplay::Init()
+void DiyClockDisplay::init()
 {
    int16_t x1, y1;
    uint16_t w, h;
@@ -67,7 +67,7 @@ void DiyClockDisplay::Init()
    _display->display();
 }
 
-void DiyClockDisplay::ShowError()
+void DiyClockDisplay::showError()
 {
    _display->invertDisplay(true);
    _display->display();
@@ -76,7 +76,7 @@ void DiyClockDisplay::ShowError()
    _display->display();
 }
 
-void DiyClockDisplay::DrawScale(float fraction)
+void DiyClockDisplay::drawScale(float fraction)
 {
    int scaleWidth = _displayWidth - (2 * SCALE_INSET);
 
@@ -91,7 +91,7 @@ void DiyClockDisplay::DrawScale(float fraction)
                       SSD1306_WHITE);
 }
 
-void DiyClockDisplay::DrawFrequency(int frequency)
+void DiyClockDisplay::drawFrequency(int frequency)
 {
    _display->fillRect(_frequencyX, 0, _displayWidth, _fontHeight, SSD1306_BLACK);
 
@@ -100,14 +100,14 @@ void DiyClockDisplay::DrawFrequency(int frequency)
    _display->print(HZ_LABEL);
 }
 
-void DiyClockDisplay::SetFrequency(int frequency)
+void DiyClockDisplay::setFrequency(int frequency)
 {
-   DrawFrequency(frequency);
-   DrawScale(frequency / (float)_frequencyMax);
+   drawFrequency(frequency);
+   drawScale(frequency / (float)_frequencyMax);
    _display->display();
 }
 
-void DiyClockDisplay::DrawStatus(const char *statusString, bool inverse)
+void DiyClockDisplay::drawStatus(const char *statusString, bool inverse)
 {
    int16_t x1, y1;
    uint16_t w, h;
@@ -132,21 +132,21 @@ void DiyClockDisplay::DrawStatus(const char *statusString, bool inverse)
    _display->display();
 }
 
-void DiyClockDisplay::SetStatus(Status status)
+void DiyClockDisplay::setStatus(Status status)
 {
    switch (status)
    {
    case Status::Run:
-      DrawStatus("RUN");
+      drawStatus("RUN");
       break;
    case Status::Halt:
-      DrawStatus("HALT");
+      drawStatus("HALT");
       break;
    case Status::Step:
-      DrawStatus("STEP");
+      drawStatus("STEP");
       break;
    case Status::Reset:
-      DrawStatus("RESET", true);
+      drawStatus("RESET", true);
       break;
    }
 }

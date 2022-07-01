@@ -15,8 +15,9 @@
 #define RESET_PIN PIN4
 #define CLOCK_PIN 10
 #define FREQ_MAX 100
-
+#define PULSE_MICROS 1000
 #define MIN_ANALOGUE_DELTA 20
+#define DISPLAY_PAUSE_MILLIS 500
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 DiyClockDisplay *clockDisplay;
@@ -52,57 +53,68 @@ void setup()
    // Clock speed pot
    pinMode(FREQ_PIN, INPUT);
 
-   // Halted
-   Halt();
+   // Reset
+   reset();
 }
 
-void Halt()
+void halt()
 {
    Timer1.stop();
    running = false;
    digitalWrite(CLOCK_PIN, LOW);
-   clockDisplay->SetStatus(DiyClockDisplay::Status::Halt);
+   clockDisplay->setStatus(DiyClockDisplay::Status::Halt);
 }
 
-void Run()
+void run()
 {
    Timer1.pwm(CLOCK_PIN, 512, period);
-   clockDisplay->SetStatus(DiyClockDisplay::Status::Run);
+   clockDisplay->setStatus(DiyClockDisplay::Status::Run);
    running = true;
+}
+
+void reset()
+{
+   halt();
+
+   clockDisplay->setStatus(DiyClockDisplay::Status::Reset);
+   delay(DISPLAY_PAUSE_MILLIS);
+
+   // TODO - Set reset line high
+
+   digitalWrite(CLOCK_PIN, LOW);
+   delayMicroseconds(PULSE_MICROS);
+   digitalWrite(CLOCK_PIN, HIGH);
+   delayMicroseconds(PULSE_MICROS);
+   digitalWrite(CLOCK_PIN, LOW);
+   delayMicroseconds(PULSE_MICROS);
+
+   // TODO - Reset reset line
+
+   clockDisplay->setStatus(DiyClockDisplay::Status::Halt);
 }
 
 void resetCallback(void *clientData)
 {
-   Halt();
-   clockDisplay->SetStatus(DiyClockDisplay::Status::Reset);
-   delay(500);
-   // TODO - Set reset line high
-   digitalWrite(CLOCK_PIN, LOW);
-   delay(10);
-   digitalWrite(CLOCK_PIN, HIGH);
-   delay(100);
-   digitalWrite(CLOCK_PIN, LOW);
-   delay(100);
-   // TODO - Reset reset line
-   clockDisplay->SetStatus(DiyClockDisplay::Status::Halt);
+   reset();
 }
 
 void singleStepCallback(void *clientData)
 {
    if (running)
    {
-      clockDisplay->ShowError();
+      clockDisplay->showError();
    }
    else
    {
-      clockDisplay->SetStatus(DiyClockDisplay::Status::Step);
+      clockDisplay->setStatus(DiyClockDisplay::Status::Step);
       digitalWrite(CLOCK_PIN, LOW);
-      delay(10);
+      delayMicroseconds(PULSE_MICROS);
       digitalWrite(CLOCK_PIN, HIGH);
-      delay(100);
+      delayMicroseconds(PULSE_MICROS);
       digitalWrite(CLOCK_PIN, LOW);
-      delay(100);
-      clockDisplay->SetStatus(DiyClockDisplay::Status::Halt);
+      delayMicroseconds(PULSE_MICROS);
+      delay(DISPLAY_PAUSE_MILLIS);
+      clockDisplay->setStatus(DiyClockDisplay::Status::Halt);
    }
 }
 
@@ -110,11 +122,11 @@ void runStopCallback(void *clientData)
 {
    if (!running)
    {
-      Run();
+      run();
    }
    else
    {
-      Halt();
+      halt();
    }
 }
 
@@ -126,7 +138,7 @@ void loop()
       currentAnalogValue = analogReading;
 
       int freq = currentAnalogValue * analogFreqScale + 1;
-      clockDisplay->SetFrequency(freq);
+      clockDisplay->setFrequency(freq);
 
       period = (float)1000000 / freq;
 

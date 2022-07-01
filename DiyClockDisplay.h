@@ -24,21 +24,27 @@ private:
     int _statusX;
     int _statusBottomY;
 
-    void Init();
-    void DrawScale(float fraction);
-    void DrawFrequency(int frequency);
-    void DrawStatus(const char *statusString, bool inverse = false);
+    void init();
+    void drawScale(float fraction);
+    void drawFrequency(int frequency);
+    void drawStatus(const char *statusString, bool inverse = false);
 
 public:
-    enum Status{Halt, Run, Reset, Step};
+    enum Status
+    {
+        Halt,
+        Run,
+        Reset,
+        Step
+    };
 
     DiyClockDisplay(int frequencyMax, Adafruit_SSD1306 *display);
 
-    void SetFrequency(int frequency);
+    void setFrequency(int frequency);
 
-    void SetStatus(Status status);
+    void setStatus(Status status);
 
-    void ShowError();
+    void showError();
 };
 
 #endif
