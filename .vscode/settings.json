@@ -1,5 +1,6 @@
 {
     "cSpell.words": [
         "Adafruit"
-    ]
+    ],
+    "C_Cpp.errorSquiggles": "enabled"
 }
